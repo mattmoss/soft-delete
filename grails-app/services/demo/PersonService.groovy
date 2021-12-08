@@ -35,11 +35,13 @@ class PersonService {
         def whereQuery = Person.where {
             name == 'Ben' || name == 'Nirav'
         }.list()
+        assert whereQuery.size() == 1
 
         // PASS
         def findAllQuery = Person.findAll {
             name == 'Ben' || name == 'Nirav'
         }
+        assert findAllQuery.size() == 1
 
         // Probably fails for the same reason as Person.withCriteria below.
         // FAIL
@@ -49,6 +51,7 @@ class PersonService {
                 eq 'name', 'Nirav'
             }
         }
+        assert critQuery.size() == 2 // SHOULD == 1 thus a failure
 
         // criteria is built-up in AbstractHibernateCriteriaBuilder (instance: HibernateCriteriaBuilder)
         // calls `criteria.list()` with publishing PreQueryEvent/PostQueryEvent (similar: `criteria.createPagedResultList()`)
@@ -59,10 +62,27 @@ class PersonService {
                 eq 'name', 'Nirav'
             }
         }
+        assert withCriteriaQuery.size() == 2 // SHOULD == 1 thus a failure
 
         // PASS
         def dynFinderQuery = Person.findAllByNameOrName('Ben', 'Nirav')
-        dynFinderQuery
+        assert dynFinderQuery.size() == 1
+
+        // PASS
+        def withDeletedWhereQuery = Person.withDeleted {
+            Person.where {
+                name == 'Ben' || name == 'Nirav'
+            }.list()
+        }
+        assert withDeletedWhereQuery.size() == 2
+
+        // PASS
+        def withDeletedDynFinderQuery = Person.withDeleted {
+            Person.findAllByNameOrName('Ben', 'Nirav')
+        }
+        assert withDeletedWhereQuery.size() == 2
+
+        withDeletedDynFinderQuery
     }
 
     def create() {

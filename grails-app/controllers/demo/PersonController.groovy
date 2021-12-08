@@ -23,6 +23,6 @@ class PersonController {
 
     def delete() {
         personService.delete()
-        respond null, status: HttpStatus.NO_CONTENT
+        respond null, status: HttpStatus.OK
     }
 }
