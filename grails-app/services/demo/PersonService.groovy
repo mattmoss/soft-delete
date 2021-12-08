@@ -30,6 +30,41 @@ class PersonService {
         def doesNotIncludeSoftDeleted = Person.findAllByNameIsNotNull()
     }
 
+    def getBenAndNirav() {
+        // PASS
+        def whereQuery = Person.where {
+            name == 'Ben' || name == 'Nirav'
+        }.list()
+
+        // PASS
+        def findAllQuery = Person.findAll {
+            name == 'Ben' || name == 'Nirav'
+        }
+
+        // Probably fails for the same reason as Person.withCriteria below.
+        // FAIL
+        def critQuery = (Person.createCriteria()) {
+            or {
+                eq 'name', 'Ben'
+                eq 'name', 'Nirav'
+            }
+        }
+
+        // criteria is built-up in AbstractHibernateCriteriaBuilder (instance: HibernateCriteriaBuilder)
+        // calls `criteria.list()` with publishing PreQueryEvent/PostQueryEvent (similar: `criteria.createPagedResultList()`)
+        // FAIL
+        def withCriteriaQuery = Person.withCriteria {
+            or {
+                eq 'name', 'Ben'
+                eq 'name', 'Nirav'
+            }
+        }
+
+        // PASS
+        def dynFinderQuery = Person.findAllByNameOrName('Ben', 'Nirav')
+        dynFinderQuery
+    }
+
     def create() {
         ['Ben', 'Nirav', 'Jeff', 'Matthew'].each {
             new Person(name: it).save(failOnError: true, flush: true)

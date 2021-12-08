@@ -12,6 +12,10 @@ class PersonController {
         respond personService.list()
     }
 
+    def getBenAndNirav() {
+        respond personService.getBenAndNirav()
+    }
+
     def create() {
         personService.create()
         respond null, status: HttpStatus.CREATED
